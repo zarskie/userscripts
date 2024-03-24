@@ -36,12 +36,12 @@ find_duplicate_files() {
 		done
 	done
 	if [[ "$remove_duplicates" == true ]]; then
-    echo
+		echo
 		for full_path in "${full_paths[@]}"; do
 			extracted_path=$(dirname "$full_path")
 			for path in "${target_dirs[@]}"; do
 				if [[ "$extracted_path" == "$path" ]]; then
-          rm "$full_path"
+					rm "$full_path"
 					echo "Removed duplicate: $full_path"
 				fi
 			done
@@ -65,7 +65,7 @@ handle_options() {
 			display_help
 			;;
 		\?)
-      echo "Invalid option: -$OPTARG"
+			echo "Invalid option: -$OPTARG"
 			display_help
 			;;
 		:)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # set -euxo pipefail
 source_dirs=()
 target_dirs=()
@@ -96,14 +96,14 @@ check_config() {
 		done
 	else
 		if [ ${#target_dirs[@]} -gt 0 ]; then
-			echo "ERROR: Target directory (-t) should only be set if removing duplicatesi (-r)"
+			echo "ERROR: Target directory (-t) should only be set if removing duplicates (-r)"
 			exit 1
 		fi
 	fi
 }
 
 display_help() {
-	echo "This script will compare defined directorie(s) recursivley to defined target directorie(s), and either remove or list all duplicate file names."
+	echo "This script will compare defined directorie(s) recursivley to a defined target directorie(s), and either remove or list all duplicate file names."
 	echo "Options:"
 	echo " -s    : Set the source directorie(s) - example -s /foo -s /bar"
 	echo " -t    : Set the target directorie(s) - example -t /foo -t /bar"

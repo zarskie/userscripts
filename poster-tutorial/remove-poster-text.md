@@ -52,7 +52,7 @@ Quick tutorial will show you how to easily remove text from any poster
 
 Its not always perfect some posters are tricker then others. For this one I had to lower the control weight to 0.7 in controlnet settings and expand the mask so the AI had more information to generate a better image. You can play around with it and see if you can get it to do even better. Also different models might be better for different images so you can try out a few. Here is another example for a tougher image to remove the text from
 
-<img src="hunters_old.jpg" alt="Image 1" style="width: 45%; margin-right: 5%;" /><img src="hunters.png" alt="Image 2" style="width: 45%;" />\
+<img src="images/hunters_old.jpg" alt="Image 1" style="width: 45%; margin-right: 5%;" /><img src="images/hunters.png" alt="Image 2" style="width: 45%;" />\
 Here is the mask I used ![expanded_mask.png](images/expanded_mask.png)
 
 You can see the colors are off but with enough playing around im sure you could get something near perfect. Anyways thats all thanks for reading!

@@ -156,9 +156,7 @@ class App:
     def sort_by_title(self, toggle_sort=True):
         if self.sort_order is None:
             self.sort_order = "ascending"
-            reverse = False
-        else:
-            reverse = self.sort_order == "descending"
+        reverse = self.sort_order == "descending"
 
         l = [(self.tree.set(k, "Title"), k) for k in self.tree.get_children('')]
         l.sort(reverse=reverse, key=lambda x: x[0].lower())

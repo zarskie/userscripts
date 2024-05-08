@@ -80,7 +80,7 @@ class App:
     def __init__(self, root):
         self.root = root
         self.root.title("Movie Library")
-        self.sort_order = False
+        self.sort_order = None
 
         self.frame = ttk.Frame(self.root)
         self.frame.pack(fill=tk.BOTH, expand=True)
@@ -153,16 +153,18 @@ class App:
         # print("Updating label to:", display_text)  # Debug print to check what we're setting the label to
         self.total_size_label.config(text=display_text)
 
-    def sort_by_title(self):
+    def sort_by_title(self, toggle_sort=True):
         l = [(self.tree.set(k, "Title"), k) for k in self.tree.get_children('')]
-        l.sort(reverse=self.sort_order, key=lambda x: x[0].lower())
+        reverse = self.sort_order == "descending"
+        l.sort(reverse=reverse, key=lambda x: x[0].lower())
+
         for index, (val, k) in enumerate(l):
             self.tree.move(k, '', index)
 
-        order_indicator = "↓" if self.sort_order else "↑"
-        self.tree.heading("Title", text=f"Title {order_indicator}", command=self.sort_by_title)
-
-        self.sort_order = not self.sort_order
+        if toggle_sort:
+            order_indicator = "↑" if self.sort_order == "ascending" else "↓"
+            self.tree.heading("Title", text=f"Title {order_indicator}", command=self.sort_by_title)
+            self.sort_order = "descending" if self.sort_order == "ascending" else "ascending"
 
     def load_movies(self, directory):
         self.tree.delete(*self.tree.get_children())
@@ -202,8 +204,6 @@ class App:
     def update_treeview(self, event=None):
         search_text = self.search_var.get().lower()
         self.tree.delete(*self.tree.get_children())
-        self.sort_order = False
-        self.tree.heading("Title", text="Title", command=self.sort_by_title)
         displayed_count = 0
         total_size_gb = 0 
         for movie in self.all_movies:
@@ -225,8 +225,10 @@ class App:
                 displayed_count += 1
                 total_size_gb += movie.filesize_gb
                 # print(f"Adding size {movie.filesize_gb} GB for movie {movie.title}")
+        self.sort_by_title(toggle_sort=False)
         self.entry_count_label.config(text=f"Total Movies: {displayed_count}")
         self.update_total_size(total_size_gb)
+        
 
     def matches_search(self, movie, text):
         attributes_to_check = [

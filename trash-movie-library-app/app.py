@@ -154,16 +154,22 @@ class App:
         self.total_size_label.config(text=display_text)
 
     def sort_by_title(self, toggle_sort=True):
+        if self.sort_order is None:
+            self.sort_order = "ascending"
+            reverse = False
+        else:
+            reverse = self.sort_order == "descending"
+
         l = [(self.tree.set(k, "Title"), k) for k in self.tree.get_children('')]
-        reverse = self.sort_order == "descending"
         l.sort(reverse=reverse, key=lambda x: x[0].lower())
 
         for index, (val, k) in enumerate(l):
             self.tree.move(k, '', index)
 
+        order_indicator = "↑" if self.sort_order == "ascending" else "↓"
+        self.tree.heading("Title", text=f"Title {order_indicator}", command=self.sort_by_title)
+
         if toggle_sort:
-            order_indicator = "↑" if self.sort_order == "ascending" else "↓"
-            self.tree.heading("Title", text=f"Title {order_indicator}", command=self.sort_by_title)
             self.sort_order = "descending" if self.sort_order == "ascending" else "ascending"
 
     def load_movies(self, directory):

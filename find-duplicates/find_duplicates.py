@@ -2,6 +2,7 @@ import os
 import hashlib
 import argparse
 from tqdm import tqdm # type: ignore
+from tabulate import tabulate # type: ignore
 
 def compute_hash(file_path, algorithm='md5', chunk_size=1024):
     # Create a hash object
@@ -104,10 +105,16 @@ def main():
         duplicates = find_duplicates_in_directories(source_directories)
     
     # Print out the duplicates
-    for file_hash, file_list in duplicates.items():
-        print(f"Duplicate files for hash {file_hash}:")
-        for file_path in file_list:
-            print(f"  {get_parent_folder_and_file(file_path)}")
+    if duplicates:
+        table_data = []
+        for file_hash, file_list in duplicates.items():
+            table_data.append([file_hash, get_parent_folder_and_file(file_list[0])])
+            for file_path in file_list[1:]:
+                table_data.append(["", get_parent_folder_and_file(file_path)])
+            table_data.append(["", ""])
+        print(tabulate(table_data, headers=["Hash", "File"], tablefmt="pretty"))
+    else:
+        print("No duplicates found.")
 
 if __name__ == "__main__":
     main()

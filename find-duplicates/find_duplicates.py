@@ -1,7 +1,7 @@
 import os
 import hashlib
 import argparse
-from tqdm import tqdm
+from tqdm import tqdm # type: ignore
 
 def compute_hash(file_path, algorithm='md5', chunk_size=1024):
     # Create a hash object
@@ -15,15 +15,16 @@ def compute_hash(file_path, algorithm='md5', chunk_size=1024):
     # Return the hexadecimal digest of the hash
     return hash_func.hexdigest()
 
-def find_duplicates(directory, hash_algorithm='md5'):
+def find_duplicates(directories, hash_algorithm='md5'):
     duplicates = {}  # Dictionary to store duplicate file paths
     file_hashes = {}  # Dictionary to store unique file hashes and their paths
-    all_files = []
     
     # List all files to process and get the total count for the progress bar
-    for dirpath, _, filenames in os.walk(directory):
-        for filename in filenames:
-            all_files.append(os.path.join(dirpath, filename))
+    all_files = []
+    for directory in directories:
+        for dirpath, _, filenames in os.walk(directory):
+            for filename in filenames:
+                all_files.append(os.path.join(dirpath, filename))
     
     # Traverse the directory and compute hashes
     for file_path in tqdm(all_files, desc="Processing files", unit="file"):
@@ -54,13 +55,13 @@ def get_parent_folder_and_file(file_path):
 
 def main():
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Find duplicate files in a directory.")
-    parser.add_argument('directory', type=str, help="The directory to search for duplicate files.")
+    parser = argparse.ArgumentParser(description="Find duplicate files in one or more directories.")
+    parser.add_argument('directories', type=str, nargs='+', help="One or more directories to search for duplicate files.")
     args = parser.parse_args()
 
     # Use the provided directory
-    directory = args.directory
-    duplicates = find_duplicates(directory)
+    directories = args.directories
+    duplicates = find_duplicates(directories)
     
     # Print out the duplicates
     for file_hash, file_list in duplicates.items():

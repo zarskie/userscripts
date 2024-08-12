@@ -91,18 +91,30 @@ def get_parent_folder_and_file(file_path):
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Find duplicate files in one or more source directories, with an optional target directory.")
-    parser.add_argument('-s', '--source', type=str, nargs='+', help="One or more source directories to search for duplicate files.")
+    parser.add_argument('-s', '--source', type=str, nargs='+', required=False, help="One or more source directories to search for duplicate files.")
     parser.add_argument('-t', '--target', type=str, nargs='?', default=None, help="The optional target directory to check for duplicates against the source directories.")
     args = parser.parse_args()
+
+    if not (args.source or args.target):
+        parser.print_help()
+        return
 
     # Use the provided directory
     source_directories = args.source
     target_directory = args.target
     
-    if target_directory:
+    if source_directories and target_directory:
         duplicates = find_duplicates_between_directories(source_directories, target_directory)
-    else:
+    elif source_directories:
         duplicates = find_duplicates_in_directories(source_directories)
+    else:
+        duplicates = {}
+    
+    # Check if only target directory is provided without any source directories
+    if args.target and not args.source:
+        print("Error: You must specify at least one source directory with -s or --source when using a target directory.")
+        parser.print_help()
+        return
     
     # Print out the duplicates
     if duplicates:

@@ -86,7 +86,7 @@ def find_duplicates_between_directories(source_directories, target_directory, ha
 def get_parent_folder_and_file(file_path):
     parent_folder = os.path.basename(os.path.dirname(file_path))
     file_name = os.path.basename(file_path)
-    return os.path.join(parent_folder, file_name)
+    return parent_folder, file_name
 
 def main():
     # Set up argument parser
@@ -108,11 +108,13 @@ def main():
     if duplicates:
         table_data = []
         for file_hash, file_list in duplicates.items():
-            table_data.append([file_hash, get_parent_folder_and_file(file_list[0])])
+            parent_folder, file_name = get_parent_folder_and_file(file_list[0])
+            table_data.append([file_hash, parent_folder, file_name])
             for file_path in file_list[1:]:
-                table_data.append(["", get_parent_folder_and_file(file_path)])
+                parent_folder, file_name = get_parent_folder_and_file(file_path)
+                table_data.append(["", parent_folder, file_name])
             table_data.append(["", ""])
-        print(tabulate(table_data, headers=["Hash", "File"], tablefmt="pretty"))
+        print(tabulate(table_data, headers=["Hash", "Directory", "File"], tablefmt="pretty"))
     else:
         print("No duplicates found.")
 

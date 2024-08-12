@@ -15,7 +15,7 @@ def compute_hash(file_path, algorithm='md5', chunk_size=1024):
     # Return the hexadecimal digest of the hash
     return hash_func.hexdigest()
 
-def find_duplicates(directories, hash_algorithm='md5'):
+def find_duplicates_in_directories(directories, hash_algorithm='md5'):
     duplicates = {}  # Dictionary to store duplicate file paths
     file_hashes = {}  # Dictionary to store unique file hashes and their paths
     
@@ -48,6 +48,40 @@ def find_duplicates(directories, hash_algorithm='md5'):
     
     return duplicates
 
+def find_duplicates_between_directories(source_directories, target_directory, hash_algorithm='md5'):
+    duplicates = {}  # Dictionary to store duplicate file paths
+    file_hash_to_path = {}  # Dictionary to store unique file hashes and their paths
+    
+    # Collect all files from the source directories and compute their hashes
+    source_files = []
+    for directory in source_directories:
+        for dirpath, _, filenames in os.walk(directory):
+            for filename in filenames:
+                source_files.append(os.path.join(dirpath, filename))
+    for file_path in tqdm(source_files, desc="Processing source files", unit="file"):
+        try:
+            file_hash = compute_hash(file_path, algorithm=hash_algorithm)
+            file_hash_to_path[file_hash] = file_path
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+    # Collect all files from the target directory
+    target_files = []
+    for dirpath, _, filenames in os.walk(target_directory):
+        for filename in filenames:
+            target_files.append(os.path.join(dirpath,filename))
+    
+    # Check for duplicates in the target directory
+    for file_path in tqdm(target_files, desc="Processing target files", unit="file"):
+        try:
+            file_hash = compute_hash(file_path, algorithm=hash_algorithm)
+            if file_hash in file_hash_to_path:
+                if file_hash not in duplicates:
+                    duplicates[file_hash] = [file_hash_to_path[file_hash]]
+                duplicates[file_hash].append(file_path)
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+    return duplicates
+
 def get_parent_folder_and_file(file_path):
     parent_folder = os.path.basename(os.path.dirname(file_path))
     file_name = os.path.basename(file_path)
@@ -55,13 +89,19 @@ def get_parent_folder_and_file(file_path):
 
 def main():
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Find duplicate files in one or more directories.")
-    parser.add_argument('directories', type=str, nargs='+', help="One or more directories to search for duplicate files.")
+    parser = argparse.ArgumentParser(description="Find duplicate files in one or more source directories, with an optional target directory.")
+    parser.add_argument('-s', '--source', type=str, nargs='+', help="One or more source directories to search for duplicate files.")
+    parser.add_argument('-t', '--target', type=str, nargs='?', default=None, help="The optional target directory to check for duplicates against the source directories.")
     args = parser.parse_args()
 
     # Use the provided directory
-    directories = args.directories
-    duplicates = find_duplicates(directories)
+    source_directories = args.source
+    target_directory = args.target
+    
+    if target_directory:
+        duplicates = find_duplicates_between_directories(source_directories, target_directory)
+    else:
+        duplicates = find_duplicates_in_directories(source_directories)
     
     # Print out the duplicates
     for file_hash, file_list in duplicates.items():

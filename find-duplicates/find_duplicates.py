@@ -88,11 +88,26 @@ def get_parent_folder_and_file(file_path):
     file_name = os.path.basename(file_path)
     return parent_folder, file_name
 
+def remove_duplicates_in_target(duplicates, target_directory):
+    files_to_remove = []
+    for file_list in duplicates.values():
+        for file_path in file_list:
+            if file_path.startswith(target_directory):
+                files_to_remove.append(file_path)
+    
+    for file_path in files_to_remove:
+        try:
+            os.remove(file_path)
+            print(f"Removed duplicate file: {file_path}")
+        except Exception as e:
+            print(f"Error removing file {file_path}: {e}")
+
 def main():
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Find duplicate files in one or more source directories, with an optional target directory.")
+    parser = argparse.ArgumentParser(description="Find and optionally remove duplicate files in one or more source directories, with an optional target directory.")
     parser.add_argument('-s', '--source', type=str, nargs='+', required=False, help="One or more source directories to search for duplicate files.")
     parser.add_argument('-t', '--target', type=str, nargs='?', default=None, help="The optional target directory to check for duplicates against the source directories.")
+    parser.add_argument('-r', '--remove', action='store_true', help="Remove duplicates found in the target directory.")
     args = parser.parse_args()
 
     if not (args.source or args.target):
@@ -116,6 +131,22 @@ def main():
         parser.print_help()
         return
     
+    # Check if the target directory is within any of the source directories
+    if args.target and args.source:
+        for source_dir in args.source:
+            if os.path.commonpath([source_dir]) == os.path.commonpath([source_dir, args.target]):
+                print("Error: Target directory cannot be within a source directory.")
+                parser.print_help()
+                return
+
+    # Check if any source directory is within the target directory
+    if args.target and args.source:
+        for source_dir in args.source:
+            if os.path.commonpath([args.target]) == os.path.commonpath([args.target, source_dir]):
+                print("Error: Source directory cannot be within the target directory.")
+                parser.print_help()
+                return
+                    
     # Print out the duplicates
     if duplicates:
         table_data = []
@@ -125,8 +156,14 @@ def main():
             for file_path in file_list[1:]:
                 parent_folder, file_name = get_parent_folder_and_file(file_path)
                 table_data.append(["", parent_folder, file_name])
-            table_data.append(["", ""])
+            table_data.append(["", "", ""])
         print(tabulate(table_data, headers=["Hash", "Directory", "File"], tablefmt="pretty"))
+        
+        if args.remove:
+            if target_directory:
+                remove_duplicates_in_target(duplicates, target_directory)
+            else:
+                print("Error: Target directory must be specified with -t or --target when using -r or --remove.")
     else:
         print("No duplicates found.")
 
